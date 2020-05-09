@@ -57,28 +57,30 @@ function initColumns()
     return columns
 end
 
+-- set the color to the background
+function endOfLine(buffer, column, duration, background)
+    for i = #column -1, 1, -1 do
+        buffer[column[i]] = fade(duration, background)
+    end
+end
+
 -- display the falling animation
-function displayAnim(buffer, column, index, colors, duration, background)
+function displayAnim(buffer, column, index, colors, duration)
     -- for each color in the falling effect
     for i, color in ipairs(colors) do
-        -- do noting for the last color
-        if i < #colors then
-            -- for the last key in the column, we just do an animation from the first color to the last one
-            if index == #column then
-                buffer[column[index - i + 1]] =
-                    fade(duration * 3, colors[1], colors[#colors])
+        -- for the last key in the column, we just do an animation from the first color to the last one
+        if index == #column then
+            buffer[column[index]] = fade(duration * 3, colors[1], colors[#colors])
+            endOfLine(buffer, column, duration, colors[#colors])
+            -- for the first key light
+        elseif i == 1 then
+            buffer[column[index]] = fade(duration, colors[1], colors[2])
             -- standard effect : fade from the current color to the next
-            elseif (index - i) >= 0 then
-                buffer[column[index - i + 1]] =
-                    fade(duration, color, colors[i + 1])
-            else
-                break
-            end
-        else
-            break
+        elseif (index >= i) then
+            buffer[column[index - i + 1]] = fade(duration, color)
         end
     end
-    wait(duration + 0.1)
+    wait(duration)
 end
 
 -- recursive calling of the animation for all the keys in a cdefined columns
@@ -117,13 +119,15 @@ function hello(buffer, key, color, background)
 end
 
 -- initial configuration
+
+background = tocolor(keyleds.config.background) or tocolor(0, 0.15, 0, 1)
 config = {
     delay = (tonumber(keyleds.config.delay) or 0.5), -- in s in config
     number = tonumber(keyleds.config.number) or 3, -- 
     highlight = tocolor(keyleds.config.highlight) or tocolor("white"),
-    background = tocolor(keyleds.config.background) or tocolor(0, 0.15, 0, 1),
+    background = background,
     colors = {
-        tocolor("green"), tocolor(0, 0.70, 0, 1), tocolor(0, 0.30, 0, 1),
+        tocolor("green"), tocolor(0, 0.80, 0, 1), tocolor(0, 0.50, 0, 1),
         background
     }
 }
